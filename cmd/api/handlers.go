@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/hayohtee/d-store/internal/storage"
+	"github.com/hayohtee/d-store/internal/validator"
 )
 
 func (app *application) putHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,15 @@ func (app *application) putHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := readJSON(w, r, &payload); err != nil {
-		app.internalServerErrorResponse(w, r, err)
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	v.Check(payload.Value != "", "value", "must be provided")
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
