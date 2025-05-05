@@ -30,7 +30,7 @@ func TestPut(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		value, exist := store[tc.key]
+		value, exist := store.m[tc.key]
 		if !exist {
 			t.Errorf("put failed: expected %q to be in the store", tc.key)
 		}
@@ -39,7 +39,7 @@ func TestPut(t *testing.T) {
 			t.Errorf("value mismatch: expected %q, but got %q", tc.value, value)
 		}
 	}
-	clear(store)
+	clear(store.m)
 }
 
 func TestGet(t *testing.T) {
@@ -57,7 +57,7 @@ func TestGet(t *testing.T) {
 			t.Errorf("value mismatch: expected %q, but got %q", tc.value, value)
 		}
 	}
-	clear(store)
+	clear(store.m)
 }
 
 func TestDelete(t *testing.T) {
@@ -70,10 +70,10 @@ func TestDelete(t *testing.T) {
 			t.Fatal(err)
 		}
 		
-		_, exists := store[tc.key]
+		_, exists := store.m[tc.key]
 		if exists {
 			t.Errorf("delete failed: %q key should not exist", tc.key)
 		}
 	}
-	clear(store)
+	clear(store.m)
 }
