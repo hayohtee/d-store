@@ -1,20 +1,36 @@
 package storage
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 var (
 	ErrNoSuchKey = errors.New("no such key")
 )
 
-var store = make(map[string]string)
+type LockableMap struct {
+	mu sync.RWMutex
+	m  map[string]string
+}
+
+var store = LockableMap{
+	m: make(map[string]string),
+}
 
 func Put(key, value string) error {
-	store[key] = value
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	store.m[key] = value
 	return nil
 }
 
 func Get(key string) (string, error) {
-	value, ok := store[key]
+	store.mu.RLock()
+	defer store.mu.RUnlock()
+
+	value, ok := store.m[key]
 	if !ok {
 		return "", ErrNoSuchKey
 	}
@@ -22,6 +38,9 @@ func Get(key string) (string, error) {
 }
 
 func Delete(key string) error {
-	delete(store, key)
+	store.mu.Lock()
+	defer store.mu.Unlock()
+
+	delete(store.m, key)
 	return nil
 }
