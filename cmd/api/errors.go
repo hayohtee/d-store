@@ -9,7 +9,7 @@ func (app *application) logError(r *http.Request, err error) {
 	app.logger.Error(err.Error(), slog.String("request_method", r.Method), slog.String("request_url", r.URL.String()))
 }
 
-func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
+func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
 	env := envelope{"error": message}
 	if err := writeJSON(w, status, env, nil); err != nil {
 		app.logError(r, err)
@@ -25,4 +25,8 @@ func (app *application) internalServerErrorResponse(w http.ResponseWriter, r *ht
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
