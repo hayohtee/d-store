@@ -42,3 +42,20 @@ func TestPut(t *testing.T) {
 
 	clear(store)
 }
+
+func TestGet(t *testing.T) {
+	for _, tc := range tt {
+		if err := Put(tc.key, tc.value); err != nil {
+			t.Error(err)
+		}
+
+		value, err := Get(tc.key)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if value != tc.value {
+			t.Errorf("value mismatch: expected %q, but got %q", tc.value, value)
+		}
+	}
+}
