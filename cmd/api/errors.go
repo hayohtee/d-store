@@ -22,3 +22,7 @@ func (app *application) internalServerErrorResponse(w http.ResponseWriter, r *ht
 	message := "the server encountered a problem and cannot process the request"
 	app.errorResponse(w, r, http.StatusInternalServerError, message)
 }
+
+func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
