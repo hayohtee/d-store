@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/hayohtee/d-store/internal/storage"
@@ -33,6 +35,38 @@ func (app *application) putHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := writeJSON(w, http.StatusCreated, envelope{"message": "item created successfully"}, nil); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) getHandler(w http.ResponseWriter, r *http.Request) {
+	key := r.PathValue("key")
+
+	value, err := storage.Get(key)
+	if err != nil {
+		switch {
+		case errors.Is(err, storage.ErrNoSuchKey):
+			app.notFoundResponse(w, r)
+		default:
+			app.internalServerErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	if err := writeJSON(w, http.StatusOK, envelope{"value": value}, nil); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) deleteHandler(w http.ResponseWriter, r *http.Request) {
+	key := r.PathValue("key")
+
+	if err := storage.Delete(key); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := writeJSON(w, http.StatusOK, envelope{"message": fmt.Sprintf("%s deleted successfully", key)}, nil); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 	}
 }
